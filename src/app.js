@@ -1,10 +1,10 @@
-import Header from './components/Header'
+import Table from './components/Table'
 
 async function App() {
   const template = document.createElement('template')
   template.innerHTML = `
     <div class="container">
-      ${Header()}
+      ${Table()}
     </div>
   `
   

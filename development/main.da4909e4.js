@@ -77492,7 +77492,7 @@ let locations = [{
   "accuracy": ""
 }];
 exports.locations = locations;
-},{}],"../src/components/Header.js":[function(require,module,exports) {
+},{}],"../src/components/Table.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -77502,22 +77502,51 @@ exports.default = void 0;
 
 var _locations = require("../data/locations");
 
+let currentPage = 1;
+let defaultRows = 20;
 /**
-  - Lay the data in a table, create a template and append the data to it
+  X- Lay the data in a table, create a template and append the data to it
   - pagination logic
-
   - search
  */
+
+function pagination(locs) {
+  let trimStart = (currentPage - 1) * defaultRows;
+  let trimEnd = trimStart + defaultRows;
+  let trimmedData = locs.slice(trimStart, trimEnd);
+  let pages = Math.ceil(locs.length / defaultRows);
+  return {
+    trimmedData,
+    pages
+  };
+}
+
+function createPageButtons(pages) {
+  let buttonTemplate = ``;
+
+  for (let page = 1; page <= pages; page++) {
+    buttonTemplate += `
+      <button value=${page} type="button" class="btn btn-info">${page}</button>
+    `;
+  }
+
+  return buttonTemplate;
+}
+
 function createTableRows(locs) {
-  let rows = [];
   locs.length -= 8000; // TODO:
 
-  for (let i = 0; i < locs.length; i++) {
+  let paginatedData = pagination(locs);
+  console.log(paginatedData);
+  let rows = [];
+
+  for (let i = 0; i < paginatedData.trimmedData.length; i++) {
     let row = `
       <tr>
-        <td>${locs[i].key}</td>
-        <td>${locs[i].latitude}</td>
-        <td>${locs[i].longitude}</td>
+        <td>${paginatedData.trimmedData[i].place_name}</td>
+        <td>${paginatedData.trimmedData[i].key.split('/')[1]}</td>
+        <td>${paginatedData.trimmedData[i].latitude}</td>
+        <td>${paginatedData.trimmedData[i].longitude}</td>
       </tr>
     `;
     rows.push(row);
@@ -77526,17 +77555,28 @@ function createTableRows(locs) {
   return rows.join(" ");
 }
 
-const Header = () => {
-  const tableRows = createTableRows(_locations.locations);
+const TableBody = rows => {
   const tableBody = `
     <tbody id="table-body">
-      ${tableRows}
+      ${rows}
     </tbody>
   `;
+  return tableBody;
+};
+
+const Table = () => {
+  // Table Rows
+  const tableRows = createTableRows(_locations.locations); // Table Body
+
+  const tableBody = TableBody(tableRows);
+  let paginatedData = pagination(_locations.locations);
+  const pageButtons = createPageButtons(paginatedData.pages); // Table Template
+
   const tableTemplate = `
     <table class="table table-dark" id="our-table">
       <thead>
         <tr>
+          <th>Place</th>
           <th>Postal Code</th>
           <th>Latitude</th>
           <th>Longitude</th>
@@ -77544,11 +77584,14 @@ const Header = () => {
       </thead>
       ${tableBody}
     </table>
+    <div class="pagination-container">
+      ${pageButtons}
+    </div>
   `;
   return tableTemplate;
 };
 
-var _default = Header;
+var _default = Table;
 exports.default = _default;
 },{"../data/locations":"../src/data/locations.js"}],"../src/App.js":[function(require,module,exports) {
 "use strict";
@@ -77558,7 +77601,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _Header = _interopRequireDefault(require("./components/Header"));
+var _Table = _interopRequireDefault(require("./components/Table"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -77566,7 +77609,7 @@ async function App() {
   const template = document.createElement('template');
   template.innerHTML = `
     <div class="container">
-      ${(0, _Header.default)()}
+      ${(0, _Table.default)()}
     </div>
   `; // Return a new node from template
 
@@ -77575,7 +77618,7 @@ async function App() {
 
 var _default = App;
 exports.default = _default;
-},{"./components/Header":"../src/components/Header.js"}],"../src/main.js":[function(require,module,exports) {
+},{"./components/Table":"../src/components/Table.js"}],"../src/main.js":[function(require,module,exports) {
 "use strict";
 
 require("./scss/app.scss");
@@ -77618,7 +77661,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50032" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54714" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
