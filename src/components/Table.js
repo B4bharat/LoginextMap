@@ -1,20 +1,24 @@
 import { locations } from '../data/locations';
 
-let currentPage = 1;
-let defaultRows = 20;
+let state = {
+  querySet: locations,
+  currentPage: 1,
+  defaultRows: 20
+};
 
 /**
   X- Lay the data in a table, create a template and append the data to it
   - pagination logic
   - search
+  - map
  */
 function pagination(locs) {
-  let trimStart = (currentPage - 1) * defaultRows;
-  let trimEnd = trimStart + defaultRows;
+  let trimStart = (state.currentPage - 1) * state.defaultRows;
+  let trimEnd = trimStart + state.defaultRows;
 
   let trimmedData = locs.slice(trimStart, trimEnd);
 
-  let pages = Math.ceil(locs.length/defaultRows);
+  let pages = Math.ceil(locs.length/state.defaultRows);
 
   return {
     trimmedData,
@@ -35,10 +39,12 @@ function createPageButtons(pages) {
 }
 
 function createTableRows(locs) {
-  locs.length -= 8000; // TODO:
+  if (locs.length >= 8000) {
+    locs.length -= 8000; // TODO: 
+  }
 
-  let paginatedData = pagination(locs)
-  console.log(paginatedData);
+  let paginatedData = pagination(locs);
+  console.log('paginatedData', paginatedData);
 
   let rows = [];
   for (let i = 0; i < paginatedData.trimmedData.length; i++) {
@@ -68,14 +74,18 @@ const TableBody = (rows) => {
   return tableBody;
 }
 
-const Table = () => {
+const Table = (clickTarget) => {
+  // setting currentPage
+  state.currentPage = clickTarget !== undefined ? clickTarget : 1;
+  
   // Table Rows
-  const tableRows = createTableRows(locations);
+  const tableRows = createTableRows(state.querySet);
 
   // Table Body
   const tableBody = TableBody(tableRows);
 
-  let paginatedData = pagination(locations);
+  // Pagination
+  let paginatedData = pagination(state.querySet);
   const pageButtons = createPageButtons(paginatedData.pages);
 
   // Table Template

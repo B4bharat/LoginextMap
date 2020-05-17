@@ -77502,19 +77502,23 @@ exports.default = void 0;
 
 var _locations = require("../data/locations");
 
-let currentPage = 1;
-let defaultRows = 20;
+let state = {
+  querySet: _locations.locations,
+  currentPage: 1,
+  defaultRows: 20
+};
 /**
   X- Lay the data in a table, create a template and append the data to it
   - pagination logic
   - search
+  - map
  */
 
 function pagination(locs) {
-  let trimStart = (currentPage - 1) * defaultRows;
-  let trimEnd = trimStart + defaultRows;
+  let trimStart = (state.currentPage - 1) * state.defaultRows;
+  let trimEnd = trimStart + state.defaultRows;
   let trimmedData = locs.slice(trimStart, trimEnd);
-  let pages = Math.ceil(locs.length / defaultRows);
+  let pages = Math.ceil(locs.length / state.defaultRows);
   return {
     trimmedData,
     pages
@@ -77534,10 +77538,12 @@ function createPageButtons(pages) {
 }
 
 function createTableRows(locs) {
-  locs.length -= 8000; // TODO:
+  if (locs.length >= 8000) {
+    locs.length -= 8000; // TODO: 
+  }
 
   let paginatedData = pagination(locs);
-  console.log(paginatedData);
+  console.log('paginatedData', paginatedData);
   let rows = [];
 
   for (let i = 0; i < paginatedData.trimmedData.length; i++) {
@@ -77564,12 +77570,15 @@ const TableBody = rows => {
   return tableBody;
 };
 
-const Table = () => {
-  // Table Rows
-  const tableRows = createTableRows(_locations.locations); // Table Body
+const Table = clickTarget => {
+  // setting currentPage
+  state.currentPage = clickTarget !== undefined ? clickTarget : 1; // Table Rows
 
-  const tableBody = TableBody(tableRows);
-  let paginatedData = pagination(_locations.locations);
+  const tableRows = createTableRows(state.querySet); // Table Body
+
+  const tableBody = TableBody(tableRows); // Pagination
+
+  let paginatedData = pagination(state.querySet);
   const pageButtons = createPageButtons(paginatedData.pages); // Table Template
 
   const tableTemplate = `
@@ -77625,15 +77634,38 @@ require("./scss/app.scss");
 
 var _App = _interopRequireDefault(require("./App"));
 
+var _Table = _interopRequireWildcard(require("./components/Table"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/**
+  X- Get Table Body
+  - check why the new elements aren't coming
+ */
 const app = async () => {
   document.getElementById('app').appendChild((await (0, _App.default)()));
+  let tableBodyContainer = document.querySelector('#table-body');
+  document.querySelector('.pagination-container').addEventListener('click', function (event) {
+    while (tableBodyContainer.firstChild) {
+      tableBodyContainer.removeChild(tableBodyContainer.firstChild);
+    }
+
+    let tableTemplate = (0, _Table.default)(event.target.value);
+    const template = document.createElement('template');
+    template.innerHTML = tableTemplate;
+    template.innerHTML = template.content.querySelector('#table-body').innerHTML;
+    console.log('template', template);
+    tableBodyContainer.appendChild(template.content.cloneNode(true));
+  });
 }; // Load app
 
 
 app();
-},{"./scss/app.scss":"../src/scss/app.scss","./App":"../src/App.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./scss/app.scss":"../src/scss/app.scss","./App":"../src/App.js","./components/Table":"../src/components/Table.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
