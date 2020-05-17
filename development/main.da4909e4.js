@@ -77572,11 +77572,15 @@ const TableBody = rows => {
 };
 
 function filterLocations(searchTerm) {
-  let updatedLocations = state.querySet.filter(location => {
-    if (location.place_name.toLowerCase().indexOf(searchTerm) !== -1) {
+  let updatedLocations = _locations.locations.filter(location => {
+    let searchPlaceName = location.place_name.toLowerCase().indexOf(searchTerm);
+    let searchPostalCode = location.key.split('/')[1].indexOf(searchTerm);
+
+    if (searchPlaceName !== -1 || searchPostalCode !== -1) {
       return true;
     }
   });
+
   return updatedLocations;
 }
 
@@ -77685,6 +77689,9 @@ const app = async () => {
   document.getElementById('app').appendChild((await (0, _App.default)())); // Table Body container for updating pagination
 
   let tableBodyContainer = document.querySelector('#table-body');
+
+  function alterTable(params) {}
+
   document.querySelector('.pagination-container').addEventListener('click', function (event) {
     while (tableBodyContainer.firstChild) {
       tableBodyContainer.removeChild(tableBodyContainer.firstChild);
@@ -77698,6 +77705,7 @@ const app = async () => {
   });
   document.querySelector('.searchTerm').addEventListener('keyup', function (e) {
     const term = e.target.value.toLowerCase();
+    console.log('term', term);
     let tableTemplate = (0, _Table.default)(undefined, term);
 
     while (tableBodyContainer.firstChild) {

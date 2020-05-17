@@ -76,11 +76,16 @@ const TableBody = (rows) => {
 }
 
 function filterLocations(searchTerm) {
-  let updatedLocations = state.querySet.filter(location => {
-    if (location.place_name.toLowerCase().indexOf(searchTerm) !== -1) {
+  
+  let updatedLocations = locations.filter(location => {
+    let searchPlaceName = location.place_name.toLowerCase().indexOf(searchTerm);
+    let searchPostalCode = location.key.split('/')[1].indexOf(searchTerm);
+
+    if (searchPlaceName !== -1 || searchPostalCode !== -1) {
       return true;
     }
   });
+  
 
   return updatedLocations;
 }
@@ -93,11 +98,9 @@ const Table = (paginationKey, searchTerm) => {
   if (searchTerm) {
    state.querySet = filterLocations(searchTerm); 
   }
-  
 
   // Table Rows
   const tableRows = createTableRows(state.querySet);
-  
 
   // Table Body
   const tableBody = TableBody(tableRows);

@@ -9,6 +9,10 @@ const app = async () => {
   // Table Body container for updating pagination
   let tableBodyContainer = document.querySelector('#table-body');
 
+  function alterTable(params) {
+    
+  }
+
   document
     .querySelector('.pagination-container')
     .addEventListener('click', function (event) {
@@ -30,6 +34,8 @@ const app = async () => {
     .querySelector('.searchTerm')
     .addEventListener('keyup', function(e) {
       const term = e.target.value.toLowerCase();
+      console.log('term', term);
+      
       let tableTemplate = Table(undefined, term);
 
       while(tableBodyContainer.firstChild) {
