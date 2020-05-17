@@ -1,9 +1,11 @@
 import Table from './components/Table'
+import Search from './components/Search'
 
 async function App() {
   const template = document.createElement('template')
   template.innerHTML = `
     <div class="container">
+      ${Search()}
       ${Table()}
     </div>
   `

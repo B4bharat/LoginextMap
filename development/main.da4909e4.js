@@ -77510,7 +77510,9 @@ let state = {
 /**
   X- Lay the data in a table, create a template and append the data to it
   - pagination logic
-  - search
+    X- basic
+    - improved buttons
+  X- search
   - map
  */
 
@@ -77543,7 +77545,6 @@ function createTableRows(locs) {
   }
 
   let paginatedData = pagination(locs);
-  console.log('paginatedData', paginatedData);
   let rows = [];
 
   for (let i = 0; i < paginatedData.trimmedData.length; i++) {
@@ -77570,9 +77571,23 @@ const TableBody = rows => {
   return tableBody;
 };
 
-const Table = clickTarget => {
+function filterLocations(searchTerm) {
+  let updatedLocations = state.querySet.filter(location => {
+    if (location.place_name.toLowerCase().indexOf(searchTerm) !== -1) {
+      return true;
+    }
+  });
+  return updatedLocations;
+}
+
+const Table = (paginationKey, searchTerm) => {
   // setting currentPage
-  state.currentPage = clickTarget !== undefined ? clickTarget : 1; // Table Rows
+  state.currentPage = paginationKey !== undefined ? paginationKey : 1; // Filter
+
+  if (searchTerm) {
+    state.querySet = filterLocations(searchTerm);
+  } // Table Rows
+
 
   const tableRows = createTableRows(state.querySet); // Table Body
 
@@ -77602,7 +77617,28 @@ const Table = clickTarget => {
 
 var _default = Table;
 exports.default = _default;
-},{"../data/locations":"../src/data/locations.js"}],"../src/App.js":[function(require,module,exports) {
+},{"../data/locations":"../src/data/locations.js"}],"../src/components/Search.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+const Search = () => {
+  const searchTemplate = `
+    <div class="wrap">
+      <div class="search">
+        <input type="text" class="searchTerm" placeholder="Search for place or postal code">
+      </div>
+    </div>
+  `;
+  return searchTemplate;
+};
+
+var _default = Search;
+exports.default = _default;
+},{}],"../src/App.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -77612,12 +77648,15 @@ exports.default = void 0;
 
 var _Table = _interopRequireDefault(require("./components/Table"));
 
+var _Search = _interopRequireDefault(require("./components/Search"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 async function App() {
   const template = document.createElement('template');
   template.innerHTML = `
     <div class="container">
+      ${(0, _Search.default)()}
       ${(0, _Table.default)()}
     </div>
   `; // Return a new node from template
@@ -77627,7 +77666,7 @@ async function App() {
 
 var _default = App;
 exports.default = _default;
-},{"./components/Table":"../src/components/Table.js"}],"../src/main.js":[function(require,module,exports) {
+},{"./components/Table":"../src/components/Table.js","./components/Search":"../src/components/Search.js"}],"../src/main.js":[function(require,module,exports) {
 "use strict";
 
 require("./scss/app.scss");
@@ -77642,12 +77681,9 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
-  X- Get Table Body
-  - check why the new elements aren't coming
- */
 const app = async () => {
-  document.getElementById('app').appendChild((await (0, _App.default)()));
+  document.getElementById('app').appendChild((await (0, _App.default)())); // Table Body container for updating pagination
+
   let tableBodyContainer = document.querySelector('#table-body');
   document.querySelector('.pagination-container').addEventListener('click', function (event) {
     while (tableBodyContainer.firstChild) {
@@ -77658,7 +77694,20 @@ const app = async () => {
     const template = document.createElement('template');
     template.innerHTML = tableTemplate;
     template.innerHTML = template.content.querySelector('#table-body').innerHTML;
+    tableBodyContainer.appendChild(template.content.cloneNode(true));
+  });
+  document.querySelector('.searchTerm').addEventListener('keyup', function (e) {
+    const term = e.target.value.toLowerCase();
+    let tableTemplate = (0, _Table.default)(undefined, term);
+
+    while (tableBodyContainer.firstChild) {
+      tableBodyContainer.removeChild(tableBodyContainer.firstChild);
+    }
+
+    const template = document.createElement('template');
+    template.innerHTML = tableTemplate;
     console.log('template', template);
+    template.innerHTML = template.content.querySelector('#table-body').innerHTML;
     tableBodyContainer.appendChild(template.content.cloneNode(true));
   });
 }; // Load app
@@ -77693,7 +77742,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54714" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59039" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

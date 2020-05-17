@@ -9,13 +9,15 @@ let state = {
 /**
   X- Lay the data in a table, create a template and append the data to it
   - pagination logic
-  - search
+    X- basic
+    - improved buttons
+  X- search
   - map
  */
 function pagination(locs) {
   let trimStart = (state.currentPage - 1) * state.defaultRows;
   let trimEnd = trimStart + state.defaultRows;
-
+  
   let trimmedData = locs.slice(trimStart, trimEnd);
 
   let pages = Math.ceil(locs.length/state.defaultRows);
@@ -44,7 +46,6 @@ function createTableRows(locs) {
   }
 
   let paginatedData = pagination(locs);
-  console.log('paginatedData', paginatedData);
 
   let rows = [];
   for (let i = 0; i < paginatedData.trimmedData.length; i++) {
@@ -74,12 +75,29 @@ const TableBody = (rows) => {
   return tableBody;
 }
 
-const Table = (clickTarget) => {
+function filterLocations(searchTerm) {
+  let updatedLocations = state.querySet.filter(location => {
+    if (location.place_name.toLowerCase().indexOf(searchTerm) !== -1) {
+      return true;
+    }
+  });
+
+  return updatedLocations;
+}
+
+const Table = (paginationKey, searchTerm) => {
   // setting currentPage
-  state.currentPage = clickTarget !== undefined ? clickTarget : 1;
+  state.currentPage = paginationKey !== undefined ? paginationKey : 1;
+
+  // Filter
+  if (searchTerm) {
+   state.querySet = filterLocations(searchTerm); 
+  }
   
+
   // Table Rows
   const tableRows = createTableRows(state.querySet);
+  
 
   // Table Body
   const tableBody = TableBody(tableRows);
