@@ -1,6 +1,8 @@
 const loadGoogleMapsApi = require('load-google-maps-api');
 import { locations } from '../data/locations';
 
+let newlyCreatedMap;
+
 class InitMap {
 
   static loadGoogleMapsApi() {
@@ -8,7 +10,7 @@ class InitMap {
   }
 
   static createMap(googleMaps, mapElement) {
-    let map = new googleMaps.Map(mapElement, {
+    newlyCreatedMap = new googleMaps.Map(mapElement, {
       center: { lat: 28.6333, lng: 77.2167 },
       zoom: 14
     });
@@ -22,15 +24,32 @@ class InitMap {
 
     for (let i = 0; i < locations.length; i++) {
       let location = locations[i];
+
       let marker = new googleMaps.Marker({
         position: { lat: location.latitude, lng: location.longitude },
-        map: map,
+        map: newlyCreatedMap,
         shape: shape,
         title: location.place_name,
       });
     }
 
-    return map;
+    return newlyCreatedMap;
+  }
+
+  static panToLocation(googleMaps, searchTerm) {
+    let updatedLocations = locations.filter(location => {
+      let searchPlaceName = location.place_name.toLowerCase().indexOf(searchTerm);
+      let searchPostalCode = location.key.split('/')[1].indexOf(searchTerm);
+
+      if (searchPlaceName !== -1 || searchPostalCode !== -1) {
+        return true;
+      }
+    });
+
+    if (updatedLocations.length === 1) {
+      var latLng = new googleMaps.LatLng(updatedLocations[0].latitude, updatedLocations[0].longitude);
+      newlyCreatedMap.panTo(latLng);
+    }
   }
 }
 export { InitMap };

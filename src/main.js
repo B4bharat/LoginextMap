@@ -31,19 +31,23 @@ const app = async () => {
       alterTable(event.target.value, undefined);
     });
 
-  document
-    .querySelector('.searchTerm')
-    .addEventListener('keyup', function (e) {
-      const term = e.target.value.toLowerCase();
-
-      alterTable(undefined, term);
-    });
-
   document.addEventListener("DOMContentLoaded", function () {
     let mapElement = document.getElementById('map');
 
     InitMap.loadGoogleMapsApi().then(function (googleMaps) {
+
       InitMap.createMap(googleMaps, mapElement);
+
+      document
+        .querySelector('.searchTerm')
+        .addEventListener('keyup', function (e) {
+          let term = e.target.value.toLowerCase();
+
+          alterTable(undefined, term);
+
+          InitMap.panToLocation(googleMaps, term);
+        });
+
     });
   });
 }

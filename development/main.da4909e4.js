@@ -1824,6 +1824,8 @@ var _locations = require("../data/locations");
 
 const loadGoogleMapsApi = require('load-google-maps-api');
 
+let newlyCreatedMap;
+
 class InitMap {
   static loadGoogleMapsApi() {
     return loadGoogleMapsApi({
@@ -1832,7 +1834,7 @@ class InitMap {
   }
 
   static createMap(googleMaps, mapElement) {
-    let map = new googleMaps.Map(mapElement, {
+    newlyCreatedMap = new googleMaps.Map(mapElement, {
       center: {
         lat: 28.6333,
         lng: 77.2167
@@ -1854,13 +1856,29 @@ class InitMap {
           lat: location.latitude,
           lng: location.longitude
         },
-        map: map,
+        map: newlyCreatedMap,
         shape: shape,
         title: location.place_name
       });
     }
 
-    return map;
+    return newlyCreatedMap;
+  }
+
+  static panToLocation(googleMaps, searchTerm) {
+    let updatedLocations = _locations.locations.filter(location => {
+      let searchPlaceName = location.place_name.toLowerCase().indexOf(searchTerm);
+      let searchPostalCode = location.key.split('/')[1].indexOf(searchTerm);
+
+      if (searchPlaceName !== -1 || searchPostalCode !== -1) {
+        return true;
+      }
+    });
+
+    if (updatedLocations.length === 1) {
+      var latLng = new googleMaps.LatLng(updatedLocations[0].latitude, updatedLocations[0].longitude);
+      newlyCreatedMap.panTo(latLng);
+    }
   }
 
 }
@@ -2099,15 +2117,18 @@ const app = async () => {
   document.querySelector('.pagination-container').addEventListener('click', function (event) {
     alterTable(event.target.value, undefined);
   });
-  document.querySelector('.searchTerm').addEventListener('keyup', function (e) {
-    const term = e.target.value.toLowerCase();
-    alterTable(undefined, term);
-  });
   document.addEventListener("DOMContentLoaded", function () {
     let mapElement = document.getElementById('map');
 
     _initMap.InitMap.loadGoogleMapsApi().then(function (googleMaps) {
       _initMap.InitMap.createMap(googleMaps, mapElement);
+
+      document.querySelector('.searchTerm').addEventListener('keyup', function (e) {
+        let term = e.target.value.toLowerCase();
+        alterTable(undefined, term);
+
+        _initMap.InitMap.panToLocation(googleMaps, term);
+      });
     });
   });
 }; // Load app
