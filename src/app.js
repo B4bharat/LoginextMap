@@ -1,5 +1,6 @@
 import Table from './components/Table'
 import Search from './components/Search'
+import Map from "./components/Map";
 
 async function App() {
   const template = document.createElement('template')
@@ -7,6 +8,9 @@ async function App() {
     <div class="container">
       ${Search()}
       ${Table()}
+    </div>
+    <div class="maps-container">
+      ${Map()}
     </div>
   `
   
