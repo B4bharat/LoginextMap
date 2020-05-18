@@ -189,7 +189,53 @@ var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../src/data/locations.js":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../node_modules/load-google-maps-api/index.js":[function(require,module,exports) {
+const API_URL = 'https://maps.googleapis.com/maps/api/js'
+const CALLBACK_NAME = '__googleMapsApiOnLoadCallback'
+
+const optionsKeys = ['channel', 'client', 'key', 'language', 'region', 'v']
+
+let promise = null
+
+module.exports = function (options = {}) {
+  promise =
+    promise ||
+    new Promise(function (resolve, reject) {
+      // Reject the promise after a timeout
+      const timeoutId = setTimeout(function () {
+        window[CALLBACK_NAME] = function () {} // Set the on load callback to a no-op
+        reject(new Error('Could not load the Google Maps API'))
+      }, options.timeout || 10000)
+
+      // Hook up the on load callback
+      window[CALLBACK_NAME] = function () {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId)
+        }
+        resolve(window.google.maps)
+        delete window[CALLBACK_NAME]
+      }
+
+      // Prepare the `script` tag to be inserted into the page
+      const scriptElement = document.createElement('script')
+      const params = [`callback=${CALLBACK_NAME}`]
+      optionsKeys.forEach(function (key) {
+        if (options[key]) {
+          params.push(`${key}=${options[key]}`)
+        }
+      })
+      if (options.libraries && options.libraries.length) {
+        params.push(`libraries=${options.libraries.join(',')}`)
+      }
+      scriptElement.src = `${options.apiUrl || API_URL}?${params.join('&')}`
+
+      // Insert the `script` tag
+      document.body.appendChild(scriptElement)
+    })
+  return promise
+}
+
+},{}],"../src/data/locations.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1766,7 +1812,61 @@ let locations = [{
   "accuracy": ""
 }];
 exports.locations = locations;
-},{}],"../src/components/Table.js":[function(require,module,exports) {
+},{}],"../src/utilities/initMap.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.InitMap = void 0;
+
+var _locations = require("../data/locations");
+
+const loadGoogleMapsApi = require('load-google-maps-api');
+
+class InitMap {
+  static loadGoogleMapsApi() {
+    return loadGoogleMapsApi({
+      key: "AIzaSyDU8tMEexcHLYl-J5i_jVOil6Y14jNPjDk"
+    });
+  }
+
+  static createMap(googleMaps, mapElement) {
+    let map = new googleMaps.Map(mapElement, {
+      center: {
+        lat: 28.6333,
+        lng: 77.2167
+      },
+      zoom: 14
+    }); // Shapes define the clickable region of the icon. The type defines an HTML
+    // <area> element 'poly' which traces out a polygon as a series of X,Y points.
+    // The final coordinate closes the poly by connecting to the first coordinate.
+
+    let shape = {
+      coords: [1, 1, 1, 20, 18, 20, 18, 1],
+      type: 'poly'
+    };
+
+    for (let i = 0; i < _locations.locations.length; i++) {
+      let location = _locations.locations[i];
+      let marker = new googleMaps.Marker({
+        position: {
+          lat: location.latitude,
+          lng: location.longitude
+        },
+        map: map,
+        shape: shape,
+        title: location.place_name
+      });
+    }
+
+    return map;
+  }
+
+}
+
+exports.InitMap = InitMap;
+},{"load-google-maps-api":"../node_modules/load-google-maps-api/index.js","../data/locations":"../src/data/locations.js"}],"../src/components/Table.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1971,6 +2071,8 @@ exports.default = _default;
 
 require("./scss/app.scss");
 
+var _initMap = require("./utilities/initMap");
+
 var _App = _interopRequireDefault(require("./App"));
 
 var _Table = _interopRequireDefault(require("./components/Table"));
@@ -2001,11 +2103,18 @@ const app = async () => {
     const term = e.target.value.toLowerCase();
     alterTable(undefined, term);
   });
+  document.addEventListener("DOMContentLoaded", function () {
+    let mapElement = document.getElementById('map');
+
+    _initMap.InitMap.loadGoogleMapsApi().then(function (googleMaps) {
+      _initMap.InitMap.createMap(googleMaps, mapElement);
+    });
+  });
 }; // Load app
 
 
 app();
-},{"./scss/app.scss":"../src/scss/app.scss","./App":"../src/App.js","./components/Table":"../src/components/Table.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./scss/app.scss":"../src/scss/app.scss","./utilities/initMap":"../src/utilities/initMap.js","./App":"../src/App.js","./components/Table":"../src/components/Table.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2033,7 +2142,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61994" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54930" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

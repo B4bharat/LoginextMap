@@ -4,7 +4,6 @@
   "description": "Simple workflow starter for building vanilla JS apps",
   "main": "index.js",
   "scripts": {
-    
     "dev": "npm run clean && parcel public/index.html --out-dir development -p 3000",
     "build": "parcel build public/index.html --out-dir dist --public-url ./",
     "clean": "rimraf ./development && rimraf -rf ./.cache"
@@ -34,6 +33,7 @@
     "sass": "^1.26.3"
   },
   "dependencies": {
-    "axios": "^0.19.2"
+    "axios": "^0.19.2",
+    "load-google-maps-api": "^2.0.2"
   }
 }
